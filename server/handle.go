@@ -5,7 +5,6 @@
 package server
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"sync"
@@ -200,43 +199,3 @@ var bufpool = sync.Pool{New: func() interface{} { r := make([]byte, MaxDatagram)
 
 // MaxDatagram is the maximum length of message that can be received.
 const MaxDatagram = 1 << 16
-
-// XXX: investigate using RecvMsgs to batch messages and reduce syscalls
-
-// Serve6 handles datagrams received on conn and passes them to the pluginchain
-func (l *listener6) Serve() error {
-	log.Printf("Listen %s", l.LocalAddr())
-	for {
-		b := *bufpool.Get().(*[]byte)
-		b = b[:MaxDatagram] //Reslice to max capacity in case the buffer in pool was resliced smaller
-
-		n, oob, peer, err := l.ReadFrom(b)
-		if errors.Is(err, net.ErrClosed) {
-			// Server is quitting
-			return nil
-		} else if err != nil {
-			log.Printf("Error reading from connection: %v", err)
-			return err
-		}
-		go l.HandleMsg6(b[:n], oob, peer.(*net.UDPAddr))
-	}
-}
-
-// Serve6 handles datagrams received on conn and passes them to the pluginchain
-func (l *listener4) Serve() error {
-	log.Printf("Listen %s", l.LocalAddr())
-	for {
-		b := *bufpool.Get().(*[]byte)
-		b = b[:MaxDatagram] //Reslice to max capacity in case the buffer in pool was resliced smaller
-
-		n, oob, peer, err := l.ReadFrom(b)
-		if errors.Is(err, net.ErrClosed) {
-			// Server is quitting
-			return nil
-		} else if err != nil {
-			log.Printf("Error reading from connection: %v", err)
-			return err
-		}
-		go l.HandleMsg4(b[:n], oob, peer.(*net.UDPAddr))
-	}
-}
