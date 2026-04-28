@@ -55,10 +55,12 @@ func (l *listener4) Serve() error {
 					IP:   ip.SrcIP,
 					Port: int(udp.SrcPort),
 				}
+
 				synthesizedOOB := &ipv4.ControlMessage{
 					IfIndex: l.Interface.Index,
 				}
 
+				println("HandleMsg4 - 64 ")
 				go l.HandleMsg4(udp.Payload, synthesizedOOB, synthesizedAddr)
 			}
 		}

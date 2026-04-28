@@ -133,6 +133,7 @@ func (l *listener4) HandleMsg4(buf []byte, oob *ipv4.ControlMessage, _peer net.A
 	}
 
 	resp = tmp
+	println("Calling Handlers: handle.go - 138")
 	for _, handler := range l.handlers {
 		resp, stop = handler(req, resp)
 		if stop {
@@ -145,16 +146,24 @@ func (l *listener4) HandleMsg4(buf []byte, oob *ipv4.ControlMessage, _peer net.A
 		var peer *net.UDPAddr
 		if !req.GatewayIPAddr.IsUnspecified() {
 			// TODO: make RFC8357 compliant
+			println("148")
 			peer = &net.UDPAddr{IP: req.GatewayIPAddr, Port: dhcpv4.ServerPort}
 		} else if resp.MessageType() == dhcpv4.MessageTypeNak {
+			println("151")
 			peer = &net.UDPAddr{IP: net.IPv4bcast, Port: dhcpv4.ClientPort}
 		} else if !req.ClientIPAddr.IsUnspecified() {
+			println("155")
 			peer = &net.UDPAddr{IP: req.ClientIPAddr, Port: dhcpv4.ClientPort}
 		} else if req.IsBroadcast() {
+			println("159")
 			peer = &net.UDPAddr{IP: net.IPv4bcast, Port: dhcpv4.ClientPort}
 		} else {
+			println("163")
 			//sends a layer2 frame so that we can define the destination MAC address
 			peer = &net.UDPAddr{IP: resp.YourIPAddr, Port: dhcpv4.ClientPort}
+			println(fmt.Sprintf("%+v", peer))
+			println("~~ 163")
+
 			useEthernet = true
 		}
 
